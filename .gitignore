@@ -1,7 +1,8 @@
 .DS_Store
 
 # Go build output
-/bin/
+/bin/*
+!/bin/harness-cli.js
 /dist/
 *.test
 *.out

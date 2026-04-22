@@ -2,6 +2,12 @@
 
 `harness-cli` initializes a repository from the Harness project templates.
 
+Install it from npm:
+
+```sh
+npm install -g @ifuryst/harness-cli
+```
+
 Run it in a new or existing repository:
 
 ```sh
@@ -42,4 +48,5 @@ Existing files are left untouched unless their content is identical. Conflicting
 ```sh
 go test ./...
 go run . --language en --dry-run
+npm pack --dry-run
 ```

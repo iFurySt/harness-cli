@@ -1,0 +1,36 @@
+{
+  "name": "@ifuryst/harness-cli",
+  "version": "0.1.0",
+  "description": "Initialize agent-first project repositories from Harness templates.",
+  "bin": {
+    "harness-cli": "bin/harness-cli.js"
+  },
+  "files": [
+    "bin",
+    "scripts",
+    "internal",
+    "main.go",
+    "go.mod",
+    "go.sum",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "go build -o bin/harness-cli .",
+    "test": "go test ./...",
+    "postinstall": "node scripts/build-npm-bin.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iFurySt/harness-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iFurySt/harness-cli/issues"
+  },
+  "homepage": "https://github.com/iFurySt/harness-cli#readme"
+}
