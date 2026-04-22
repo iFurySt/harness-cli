@@ -1,0 +1,11 @@
+.DS_Store
+
+# Go build output
+/bin/
+/dist/
+*.test
+*.out
+
+# Local editor state
+.idea/
+.vscode/
