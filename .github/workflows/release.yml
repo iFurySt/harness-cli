@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   publish:
@@ -25,8 +26,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.14.0
           registry-url: https://registry.npmjs.org
+
+      - name: Setup npm
+        run: npm install -g npm@^11.5.1
 
       - name: Test
         run: go test ./...
@@ -49,5 +53,3 @@ jobs:
       - name: Publish
         if: steps.published-version.outputs.exists != 'true'
         run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
