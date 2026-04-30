@@ -1,6 +1,6 @@
 {
   "name": "@ifuryst/harness-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Initialize agent-first project repositories from Harness templates.",
   "bin": {
     "harness-cli": "bin/harness-cli.js"
