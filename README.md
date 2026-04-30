@@ -28,8 +28,10 @@ By default the CLI asks for a template language:
 Useful non-interactive examples:
 
 ```sh
+harness-cli ./my-project --language zh
 harness-cli init --language en
 harness-cli init --language zh --target ./my-project
+harness-cli init ./my-project --language zh
 harness-cli init --language zh --force
 harness-cli init --language en --dry-run
 ```

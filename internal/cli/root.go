@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/iFurySt/harness-cli/internal/scaffold"
@@ -30,12 +31,16 @@ func NewRootCommand(version string, in io.Reader, out, errOut io.Writer) *cobra.
 	rootOpts := initOptions{initGit: true}
 
 	rootCmd := &cobra.Command{
-		Use:           "harness-cli",
+		Use:           "harness-cli [target]",
 		Short:         "Initialize agent-first project repositories from Harness templates",
 		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		Args:          cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := applyTargetArg(cmd, &rootOpts, args); err != nil {
+				return err
+			}
 			return runInit(cmd.Context(), rootOpts, in, out)
 		},
 	}
@@ -53,14 +58,29 @@ func NewRootCommand(version string, in io.Reader, out, errOut io.Writer) *cobra.
 func newInitCommand(in io.Reader, out io.Writer) *cobra.Command {
 	opts := initOptions{initGit: true}
 	cmd := &cobra.Command{
-		Use:   "init",
+		Use:   "init [target]",
 		Short: "Initialize the current repository from a Harness template",
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := applyTargetArg(cmd, &opts, args); err != nil {
+				return err
+			}
 			return runInit(cmd.Context(), opts, in, out)
 		},
 	}
 	bindInitFlags(cmd, &opts)
 	return cmd
+}
+
+func applyTargetArg(cmd *cobra.Command, opts *initOptions, args []string) error {
+	if len(args) == 0 {
+		return nil
+	}
+	if cmd.Flags().Changed("target") {
+		return fmt.Errorf("target specified both as positional argument %q and --target", args[0])
+	}
+	opts.targetDir = args[0]
+	return nil
 }
 
 func bindInitFlags(cmd *cobra.Command, opts *initOptions) {
