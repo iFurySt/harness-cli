@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -24,6 +25,26 @@ func TestRootCommandAcceptsPositionalTarget(t *testing.T) {
 	}
 
 	assertFileContent(t, filepath.Join(target, "README.md"), "hello\n")
+}
+
+func TestRootCommandRunsProjectInitAndCreatesInitialCommit(t *testing.T) {
+	source := testTemplateSource(t)
+	writeExecutableFile(t, filepath.Join(source, "scripts", "init-project.sh"), "#!/bin/sh\nprintf 'project=%s\\n' \"$1\" > PROJECT.txt\n")
+	target := filepath.Join(t.TempDir(), "project")
+
+	out, _, err := executeRootCommand(t,
+		target,
+		"--language", "en",
+		"--source", source,
+	)
+	if err != nil {
+		t.Fatalf("execute root command: %v\noutput:\n%s", err, out)
+	}
+
+	assertFileContent(t, filepath.Join(target, "PROJECT.txt"), "project=project\n")
+	assertGitOutputContains(t, target, []string{"rev-parse", "--show-toplevel"}, target)
+	assertGitOutputContains(t, target, []string{"log", "-1", "--pretty=%B"}, "Init Commit")
+	assertGitOutputContains(t, target, []string{"log", "-1", "--pretty=%B"}, "https://github.com/iFurySt/harness-cli")
 }
 
 func TestInitCommandAcceptsPositionalTarget(t *testing.T) {
@@ -77,6 +98,16 @@ func testTemplateSource(t *testing.T) string {
 	return source
 }
 
+func writeExecutableFile(t *testing.T, path, content string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatalf("MkdirAll(%s): %v", path, err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0o755); err != nil {
+		t.Fatalf("WriteFile(%s): %v", path, err)
+	}
+}
+
 func assertFileContent(t *testing.T, path, want string) {
 	t.Helper()
 
@@ -87,4 +118,24 @@ func assertFileContent(t *testing.T, path, want string) {
 	if string(got) != want {
 		t.Fatalf("%s = %q, want %q", path, string(got), want)
 	}
+}
+
+func assertGitOutputContains(t *testing.T, target string, args []string, want string) {
+	t.Helper()
+
+	cmdArgs := append([]string{"-C", target}, args...)
+	output, err := runGit(cmdArgs...)
+	if err != nil {
+		t.Fatalf("git %v: %v\n%s", cmdArgs, err, output)
+	}
+	got := strings.TrimSpace(output)
+	if !strings.Contains(got, want) {
+		t.Fatalf("git %v = %q, want substring %q", cmdArgs, got, want)
+	}
+}
+
+func runGit(args ...string) (string, error) {
+	cmd := exec.Command("git", args...)
+	output, err := cmd.CombinedOutput()
+	return string(output), err
 }

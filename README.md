@@ -45,6 +45,8 @@ harness-cli init --language zh --source ../harness-template-cn
 
 Existing files are left untouched unless their content is identical. Conflicting files stop the run; pass `--force` to overwrite them.
 
+When the copied template includes `scripts/init-project.sh`, the CLI runs it with the target directory name. By default it also initializes the target directory as its own git repository and creates the first `Init Commit` with a reference back to `https://github.com/iFurySt/harness-cli`. Pass `--git=false` to skip git initialization and the initial commit.
+
 ## Development
 
 ```sh

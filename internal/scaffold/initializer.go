@@ -79,6 +79,18 @@ func (i *Initializer) Run(ctx context.Context, opts InitOptions) error {
 
 	printCopyReport(i.io.Out, report, opts.DryRun)
 
+	projectName := filepath.Base(targetAbs)
+	ranProjectInit, err := RunProjectInitScript(ctx, targetAbs, projectName, opts.DryRun, i.io.Out)
+	if err != nil {
+		return err
+	}
+	switch {
+	case opts.DryRun && ranProjectInit:
+		fmt.Fprintf(i.io.Out, "Would run %s %s\n", ProjectInitScript, projectName)
+	case ranProjectInit:
+		fmt.Fprintf(i.io.Out, "Ran %s %s\n", ProjectInitScript, projectName)
+	}
+
 	if opts.InitGit {
 		initialized, err := EnsureGitRepository(ctx, targetAbs, opts.DryRun)
 		if err != nil {
@@ -91,6 +103,21 @@ func (i *Initializer) Run(ctx context.Context, opts InitOptions) error {
 			fmt.Fprintln(i.io.Out, "Initialized git repository")
 		default:
 			fmt.Fprintln(i.io.Out, "Git repository already present")
+		}
+
+		commitStatus, err := CreateInitialCommit(ctx, targetAbs, opts.DryRun)
+		if err != nil {
+			return err
+		}
+		switch commitStatus {
+		case InitialCommitWouldCreate:
+			fmt.Fprintln(i.io.Out, "Would create initial git commit")
+		case InitialCommitCreated:
+			fmt.Fprintf(i.io.Out, "Created initial git commit: %s\n", InitialCommitSubject)
+		case InitialCommitSkippedHasCommits:
+			fmt.Fprintln(i.io.Out, "Initial git commit already present")
+		case InitialCommitSkippedNoChanges:
+			fmt.Fprintln(i.io.Out, "No changes to commit")
 		}
 	}
 
